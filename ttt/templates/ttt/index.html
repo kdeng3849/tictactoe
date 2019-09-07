@@ -1,0 +1,75 @@
+
+{% load static %}
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>tic-tac-toe</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+</head>
+<body>
+    <div class="container my-5">
+{% if name %}
+    <div>Hello {{ name }}, {% now "jS F Y H:i" %}</div>
+
+    <form action='/ttt/' method='POST'>{% csrf_token %}
+        <div id="grid" class="col-sm-3">
+                <!-- <div class="row">
+                    <button type="button" id="0" class="box btn btn-lg btn-outline-primary rounded-0">-</button>
+                    <button type="button" id="1" class="box btn btn-lg btn-outline-primary rounded-0">-</button>
+                    <button type="button" id="2" class="box btn btn-lg btn-outline-primary rounded-0">-</button>
+                </div>
+                <div class="row">
+                    <button type="button" id="3" class="box btn btn-lg btn-outline-primary rounded-0">-</button>
+                    <button type="button" id="4" class="box btn btn-lg btn-outline-primary rounded-0">-</button>
+                    <button type="button" id="5" class="box btn btn-lg btn-outline-primary rounded-0">-</button>
+                </div>
+                <div class="row">
+                    <button type="button" id="6" class="box btn btn-lg btn-outline-primary rounded-0">-</button>
+                    <button type="button" id="7" class="box btn btn-lg btn-outline-primary rounded-0">-</button>
+                    <button type="button" id="8" class="box btn btn-lg btn-outline-primary rounded-0">-</button>
+                </div>  -->
+                <table class="table table-bordered text-center">
+                    <tr>
+                        <td id="0" class="box"></td>
+                        <td id="1" class="box"></td>
+                        <td id="2" class="box"></td>
+                    </tr>
+                    <tr>
+                        <td id="3" class="box"></td>
+                        <td id="4" class="box"></td>
+                        <td id="5" class="box"></td>
+                    </tr>
+                    <tr>
+                        <td id="6" class="box"></td>
+                        <td id="7" class="box"></td>
+                        <td id="8" class="box"></td>
+                    </tr>
+                </table>
+            </div>
+    </form>
+    <div id="winner">
+
+    </div>
+{% else %}
+    <form action='.' method='POST'>{% csrf_token %}
+        <div class="form-group row">
+            <!-- <label for="name" class="col-form-label">{{placeholder}}</label> -->
+            <div class="col-sm-3">
+                <input type="text" name="name" class="form-control" id="name" placeholder="Name">
+            </div>
+            <div>
+                <input class="btn btn-primary" type="submit" value="Enter" />
+            </div>
+            <!-- {{ name_form.as_p }} -->
+        </div>
+    </form>
+{% endif %}
+</div>
+
+<script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
+<script src="{% static 'ttt/js/ttt.js' %}"></script>
+</body>
+</html>
+
