@@ -9,6 +9,7 @@ from django.views.decorators.csrf import csrf_exempt
 # from .forms import NameForm
 
 # Create your views here.
+@csrf_exempt
 def index(request):
 
     if request.method == "POST":
