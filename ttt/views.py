@@ -27,7 +27,6 @@ def index(request):
 def play(request):
 
     data = json.loads(request.body.decode('utf-8'))
-    play = int(data['play'])
     grid = data['grid']
 
     def check_winner(grid):
@@ -54,12 +53,15 @@ def play(request):
 
         return winner
 
-    def find_empty(grid, x, y, z):
+    def fill_empty(grid, x, y, z):
         for i in range(x, y, z):
-                if grid[i] == ' ':
-                    grid[i] = 'O'
+            if grid[i] == ' ':
+                grid[i] = 'O'
 
     def make_move(grid):
+        if ' ' not in grid:
+            return
+
         ht = grid[0] + grid[1] + grid[2]
         hm = grid[3] + grid[4] + grid[5]
         hb = grid[6] + grid[7] + grid[8]
@@ -73,21 +75,21 @@ def play(request):
 
         action_combos = [' XX', 'X X', 'XX ', ' OO', 'O O', 'OO ']
         if ht in action_combos:
-            find_empty(grid, 0, 3, 1)
+            fill_empty(grid, 0, 3, 1)
         elif hm in action_combos:
-            find_empty(grid, 3, 6, 1)
+            fill_empty(grid, 3, 6, 1)
         elif hb in action_combos:
-            find_empty(grid, 6, 9, 1)
+            fill_empty(grid, 6, 9, 1)
         elif vl in action_combos:
-            find_empty(grid, 0, 7, 3)
+            fill_empty(grid, 0, 7, 3)
         elif vm in action_combos:
-            find_empty(grid, 1, 8, 3)
+            fill_empty(grid, 1, 8, 3)
         elif vr in action_combos:
-            find_empty(grid, 2, 9, 3)
+            fill_empty(grid, 2, 9, 3)
         elif dl in action_combos:
-            find_empty(grid, 0, 9, 4)
+            fill_empty(grid, 0, 9, 4)
         elif dr in action_combos:
-            find_empty(grid, 2, 7, 2)
+            fill_empty(grid, 2, 7, 2)
         else:
             i, j = [random.randint(0, 8), 0]
             print(i)
@@ -97,7 +99,6 @@ def play(request):
                 j += 1
             grid[i] = 'O'
 
-    grid[play] = 'X'    
     winner = check_winner(grid)
     
     if winner == ' ':

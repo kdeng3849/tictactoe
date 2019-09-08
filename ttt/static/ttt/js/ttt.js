@@ -9,7 +9,6 @@ $(function () {
 
     function fillGrid(grid) {
         for (var i = 0; i < grid.length; i++) {
-            // document.getElementById(i).innerHTML = grid[i] == ' ' ? '-' : grid[i];
             document.getElementById(i).innerHTML = grid[i];
         }    
     }
@@ -18,11 +17,12 @@ $(function () {
         
         var box = document.getElementById(id);
         
+        // only if there isn't a winner AND box is empty
         if(winner == ' ' && box.innerHTML == ' ') {
             box.innerHTML = 'X';
+            grid[id] = 'X'
 
             data = {
-                "play": id,
                 "grid": grid,
             }
             fetch("/ttt/play", {
