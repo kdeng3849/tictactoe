@@ -19,13 +19,13 @@ $(function () {
         var box = document.getElementById(id);
         
         if(winner == ' ' && box.innerHTML == ' ') {
-            box.innerHTML = 'x';
+            box.innerHTML = 'X';
 
             data = {
                 "play": id,
                 "grid": grid,
             }
-            fetch("/ttt/play/", {
+            fetch("/ttt/play", {
                 method: "POST",
                 mode: "cors",
                 cache: "no-cache",
@@ -51,6 +51,6 @@ $(function () {
         }
 
     }
-  
-    fillGrid(grid);
+    if(document.getElementById("grid"))
+        fillGrid(grid);
   });

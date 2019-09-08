@@ -10,42 +10,21 @@ from django.views.decorators.csrf import csrf_exempt
 
 # Create your views here.
 def index(request):
-    # return HttpResponse("HELLO FROM POSTS")
 
-    # return render(request, 'ttt/index.html')
-
-    # template = loader.get_template('ttt/index.html')
-    # return HttpResponse(template.render(request))
-
-    # print(request.POST.get('name'))
-
-    # name_form = NameForm()
-
-    name = ""
     if request.method == "POST":
         if request.POST.get('name') not in ['', None]:
             name = request.POST.get('name')
-            # d = date.today()
             context = {
                 "name": name,
             }
-            return render(request, 'ttt/index.html', context)
-        else:
-            # r = requests.post('./play/', params=request.POST)
-            # r = urllib.urlopen('/play/', request.POST)
-            # print(r)
-            
-            # d = date.today()
-            context = {
-                "name": name + "test",
-             }
+            print("hello", name)
             return render(request, 'ttt/index.html', context)
     
     return render(request, 'ttt/index.html')
 
 @csrf_exempt
 def play(request):
-    # play = request.POST.get('play')
+
     data = json.loads(request.body.decode('utf-8'))
     play = int(data['play'])
     grid = data['grid']
@@ -122,7 +101,6 @@ def play(request):
     
     if winner == ' ':
         make_move(grid)
-        # print(grid)
         winner = check_winner(grid)
 
     return JsonResponse({"grid": grid, "winner": winner})
