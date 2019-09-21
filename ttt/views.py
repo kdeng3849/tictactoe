@@ -1,25 +1,34 @@
 from datetime import date
 import json, random
 
+# from django.contrib.auth.forms import UserCreationForm
+from django.contrib import messages
+from django.contrib.auth.models import User
 from django.shortcuts import render
 from django.http import HttpResponse, JsonResponse
 from django.template import loader
 from django.views.decorators.csrf import csrf_exempt
 
-# from .forms import NameForm
+from .forms import AddUserForm
 
 # Create your views here.
 @csrf_exempt
 def index(request):
 
-    if request.method == "POST":
-        if request.POST.get('name') not in ['', None]:
-            name = request.POST.get('name')
-            context = {
-                "name": name,
-            }
-            print("hello", name)
-            return render(request, 'ttt/index.html', context)
+    # if request.method == "POST":
+    #     if request.POST.get('username') not in ['', None]:
+    #         username, email = [request.POST.get('username'), request.POST.get('email')]
+    #         # name = request.POST.get('name')
+    #         context = {
+    #             "username": username,
+    #             "email": email,
+    #         }
+    #         print(context)
+    #         return render(request, 'ttt/index.html', context)
+
+    #     # username, email = [request.POST.get('username'), request.POST.get('email')]
+        
+
     
     return render(request, 'ttt/index.html')
 
@@ -106,3 +115,26 @@ def play(request):
         winner = check_winner(grid)
 
     return JsonResponse({"grid": grid, "winner": winner})
+
+def add_user(request):
+
+    if request.method == "POST":
+        form = AddUserForm(request.POST)
+        if form.is_valid():
+            username, password, email = [form.cleaned_data.get('username'), form.cleaned_data.get('password'), form.cleaned_data.get('email')]
+            
+            if User.objects.filter(username=username).exists() or User.objects.filter(email=email).exists():
+                messages.warning(request, f'Account already exists for {username}.')
+                return render(request, 'ttt/index.html', { 'form': form })
+
+            user = User.objects.create_user(username=username, password=password, email=email, is_active=False)
+            user.save()
+            messages.success(request, f'Account created for {username}. Please validate your email.')
+            context = {
+                "username": username,
+                "email": email,
+            }
+            return render(request, 'ttt/index.html', context)        
+
+    form = AddUserForm()
+    return render(request, 'ttt/index.html', { 'form': form })
