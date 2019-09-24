@@ -3,13 +3,14 @@ import json, random
 
 # from django.contrib.auth.forms import UserCreationForm
 from django.contrib import messages
+from django.contrib.auth import login, logout, authenticate
 from django.contrib.auth.models import User
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 from django.http import HttpResponse, JsonResponse
 from django.template import loader
 from django.views.decorators.csrf import csrf_exempt
 
-from .forms import AddUserForm
+from .forms import AddUserForm, LoginForm
 
 # Create your views here.
 @csrf_exempt
@@ -28,9 +29,10 @@ def index(request):
 
     #     # username, email = [request.POST.get('username'), request.POST.get('email')]
         
-
+    form = AddUserForm()
+    form2 = LoginForm()
     
-    return render(request, 'ttt/index.html')
+    return render(request, 'ttt/index.html', { 'form': form, 'form2': form2 })
 
 @csrf_exempt
 def play(request):
@@ -116,25 +118,67 @@ def play(request):
 
     return JsonResponse({"grid": grid, "winner": winner})
 
+@csrf_exempt
 def add_user(request):
 
     if request.method == "POST":
-        form = AddUserForm(request.POST)
+        data = json.loads(request.body.decode('utf-8'))
+        form = AddUserForm(data)
+
         if form.is_valid():
             username, password, email = [form.cleaned_data.get('username'), form.cleaned_data.get('password'), form.cleaned_data.get('email')]
-            
-            if User.objects.filter(username=username).exists() or User.objects.filter(email=email).exists():
-                messages.warning(request, f'Account already exists for {username}.')
-                return render(request, 'ttt/index.html', { 'form': form })
+            print(username, password, email)
 
+            # check if user already exists
+            if User.objects.filter(username=username).exists() or User.objects.filter(email=email).exists():
+                # messages.warning(request, f'Account already exists for {username}.')
+                # return render(request, 'ttt/index.html', { 'form': form })
+                context = {
+                    "status": "ERROR",
+                }
+                print(context)
+                return JsonResponse(context)
+
+            # create user
             user = User.objects.create_user(username=username, password=password, email=email, is_active=False)
             user.save()
-            messages.success(request, f'Account created for {username}. Please validate your email.')
+            # messages.success(request, f'Account created for {username}. Please validate your email.')
             context = {
+                "status": "OK",
                 "username": username,
                 "email": email,
             }
-            return render(request, 'ttt/index.html', context)        
+            # return render(request, 'ttt/index.html', context)
+            return JsonResponse(context)
 
+    # NEEDED?
     form = AddUserForm()
-    return render(request, 'ttt/index.html', { 'form': form })
+    # return render(request, 'ttt/index.html', { 'form': form })
+    return JsonResponse({"status": "ERROR"})
+
+
+def login_user(request):
+    if request.method == 'POST':
+        form = LoginForm(request.POST)
+        if form.is_valid():
+            username = form.cleaned_data.get('username')
+            password = form.cleaned_data.get('password')
+            user = authenticate(username=username, password=password)
+            if user is not None:
+                login(request, user)
+                messages.info(request, f"You are now logged in as {username}.")
+                
+                context = {
+                    "username": username,
+                }
+                return render(request, 'ttt/index.html', context)
+            else:
+                messages.error(request, "Invalid username or password.")
+        else:
+            messages.error(request, "Invalid username or password.")
+
+    context = {
+        "form":AddUserForm(),
+        "form2": LoginForm(),
+    }
+    return render(request, 'ttt/index.html', context)

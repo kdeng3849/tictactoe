@@ -7,6 +7,34 @@ $(function () {
         play(this.id);
     });
 
+    $('#signupForm').submit(function(event) {
+        event.preventDefault();
+
+        data = $(this).serializeArray().reduce((dict, field) => {
+            dict[field.name] = field.value;
+            return dict;
+        }, {});
+        
+        fetch("/adduser", {
+            method: "POST",
+            mode: "cors",
+            cache: "no-cache",
+            credentials: "same-origin",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            redirect: "follow",
+            referrer: "no-referrer",
+            body: JSON.stringify(data)
+        })
+        .then(response => {
+            return response.json();
+        })
+        .then(response => {
+            console.log(response);
+        })
+    })
+
     function fillGrid(grid) {
         for (var i = 0; i < grid.length; i++) {
             document.getElementById(i).innerHTML = grid[i];
