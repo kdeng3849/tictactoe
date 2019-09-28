@@ -1,16 +1,19 @@
-from datetime import date
+from datetime import date, datetime
 import json, random
 
 # from django.contrib.auth.forms import UserCreationForm
 from django.contrib import messages
 from django.contrib.auth import login, logout, authenticate
 from django.contrib.auth.models import User
+from django.core import serializers
 from django.shortcuts import render, redirect
 from django.http import HttpResponse, JsonResponse
 from django.template import loader
 from django.views.decorators.csrf import csrf_exempt
+from django.views.decorators.http import require_http_methods
 
 from .forms import AddUserForm, LoginForm
+from .models import Game
 
 # Create your views here.
 @csrf_exempt
@@ -31,8 +34,16 @@ def index(request):
         
     form = AddUserForm()
     form2 = LoginForm()
+
+    context = {
+        "form": form,
+        "form2": form2,
+    }
+
+    # if request.session.get('username'):
+    #     context['username'] = request.session.get('username')
     
-    return render(request, 'ttt/index.html', { 'form': form, 'form2': form2 })
+    return render(request, 'ttt/index.html', context)
 
 @csrf_exempt
 def play(request):
@@ -116,6 +127,16 @@ def play(request):
         make_move(grid)
         winner = check_winner(grid)
 
+    # if there is a winner, or no more empty spaces (tie)
+    if winner != ' ' or ' ' not in grid:
+        start_time = datetime.now().strftime("%m%d%y%H%M%S")
+        grid_str = str(grid)
+        # grid_str = json.dumps(grid)
+        # print(grid)
+        # print(grid_str)
+        game = Game(id=start_time, user=request.user, grid=grid_str, winner=winner)
+        game.save()
+
     return JsonResponse({"grid": grid, "winner": winner})
 
 @csrf_exempt
@@ -127,7 +148,7 @@ def add_user(request):
 
         if form.is_valid():
             username, password, email = [form.cleaned_data.get('username'), form.cleaned_data.get('password'), form.cleaned_data.get('email')]
-            print(username, password, email)
+            # print(username, password, email)
 
             # check if user already exists
             if User.objects.filter(username=username).exists() or User.objects.filter(email=email).exists():
@@ -136,17 +157,17 @@ def add_user(request):
                 context = {
                     "status": "ERROR",
                 }
-                print(context)
+                # print(context)
                 return JsonResponse(context)
 
             # create user
-            user = User.objects.create_user(username=username, password=password, email=email, is_active=False)
+            user = User.objects.create_user(username=username, password=password, email=email, is_active=True)
             user.save()
             # messages.success(request, f'Account created for {username}. Please validate your email.')
+
+            # request.session['username'] = username
             context = {
                 "status": "OK",
-                "username": username,
-                "email": email,
             }
             # return render(request, 'ttt/index.html', context)
             return JsonResponse(context)
@@ -156,29 +177,99 @@ def add_user(request):
     # return render(request, 'ttt/index.html', { 'form': form })
     return JsonResponse({"status": "ERROR"})
 
-
+@csrf_exempt
 def login_user(request):
     if request.method == 'POST':
-        form = LoginForm(request.POST)
+        data = json.loads(request.body.decode('utf-8'))
+        form = LoginForm(data)
+        print("hello", form.is_valid())
         if form.is_valid():
             username = form.cleaned_data.get('username')
             password = form.cleaned_data.get('password')
             user = authenticate(username=username, password=password)
+            print(user)
             if user is not None:
                 login(request, user)
-                messages.info(request, f"You are now logged in as {username}.")
-                
-                context = {
-                    "username": username,
-                }
-                return render(request, 'ttt/index.html', context)
+                request.session['username'] = username
+                print(request.session['username'])
+                # messages.info(request, f"You are now logged in as {username}.")
+                response = JsonResponse({"status": "OK"})
+                return response
             else:
-                messages.error(request, "Invalid username or password.")
+                # messages.error(request, "Invalid username or password.")
+                return JsonResponse({"status": "ERROR"})
         else:
-            messages.error(request, "Invalid username or password.")
+            # messages.error(request, "Invalid username or password.")
+            return JsonResponse({"status": "ERROR"})
+    else:
+        context = {
+            "form":AddUserForm(),
+            "form2": LoginForm(),
+        }
+        return render(request, 'ttt/index.html', context)
 
-    context = {
-        "form":AddUserForm(),
-        "form2": LoginForm(),
+@csrf_exempt
+def logout_user(request):
+    # try:
+    #     del request.session['username']
+    # except KeyError:
+    #     return JsonResponse({"status": "ERROR"})
+    logout(request)
+    return JsonResponse({"status": "OK"})
+
+@csrf_exempt
+def list_games(request):
+    if request.user.is_authenticated:
+        response = {
+            'status': 'OK',
+            'games': []
+        }
+        
+        query = list(Game.objects.filter(user=request.user).values('id'))
+        for game in query:
+            response['games'].append({
+                'id': game['id'],
+            })
+
+        return JsonResponse(response)
+
+    return JsonResponse({"status": "ERROR"})
+
+@csrf_exempt
+@require_http_methods(["POST"])
+def get_game(request):
+    response = {
+        'status': 'OK',
+        'grid': '',
+        'winner': '',
     }
-    return render(request, 'ttt/index.html', context)
+    data = json.loads(request.body.decode('utf-8'))
+    query = list(Game.objects.filter(user=request.user, id=data).values('grid', 'winner'))
+
+    game = query[0]
+    response['grid'] = game['grid']
+    response['winner'] = game['winner']
+
+    return JsonResponse(response)
+
+@csrf_exempt
+@require_http_methods(["POST"])
+def get_score(request):
+    response = {
+        'status': 'OK',
+        'human': 0,
+        'wopr': 0,
+        'tie': 0
+    }
+
+    query = list(Game.objects.filter(user=request.user).values('winner'))
+
+    for game in query:
+        if game['winner'] == 'X':
+            response['human'] += 1
+        elif game['winner'] == 'O':
+            response['wopr'] += 1
+        else:
+            response['tie'] += 1
+
+    return JsonResponse(response)

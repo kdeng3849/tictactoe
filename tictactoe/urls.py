@@ -22,4 +22,8 @@ urlpatterns = [
     path('ttt/', include('ttt.urls')),
     path('adduser', ttt_views.add_user),
     path('login', ttt_views.login_user),
+    path('logout', ttt_views.logout_user),
+    path('listgames', ttt_views.list_games),
+    path('getgame', ttt_views.get_game),
+    path('getscore', ttt_views.get_score),
 ]

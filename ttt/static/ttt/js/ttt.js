@@ -3,6 +3,19 @@ $(function () {
     var winner = ' ';
     var grid = [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '];
 
+    function showPage(page) {
+        $('.page').hide()
+        $('#' + page + "Page").show()
+    }
+
+    $('#signupButton').click(() => {
+        showPage('signup');
+    })
+
+    $('#loginButton').click(() => {
+        showPage('login');
+    })
+
     $('.box').click(function () {
         play(this.id);
     });
@@ -32,6 +45,63 @@ $(function () {
         })
         .then(response => {
             console.log(response);
+            
+            if(response.status == "OK")
+                showPage('play');
+        })
+    })
+
+    $('#loginForm').submit(function(event) {
+        event.preventDefault();
+
+        data = $(this).serializeArray().reduce((dict, field) => {
+            dict[field.name] = field.value;
+            return dict;
+        }, {});
+        
+        fetch("/login", {
+            method: "POST",
+            mode: "cors",
+            cache: "no-cache",
+            credentials: "same-origin",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            redirect: "follow",
+            referrer: "no-referrer",
+            body: JSON.stringify(data)
+        })
+        .then(response => {
+            return response.json();
+        })
+        .then(response => {
+            console.log(response);
+
+            if(response.status == "OK")
+                showPage('play');
+        })
+    })
+
+    $('#logoutButton').click(function(event) {
+        fetch("/logout", {
+            method: "GET",
+            mode: "cors",
+            cache: "no-cache",
+            credentials: "same-origin",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            redirect: "follow",
+            referrer: "no-referrer",
+        })
+        .then(response => {
+            return response.json();
+        })
+        .then(response => {
+            console.log(response);
+
+            if(response.status == "OK")
+                showPage('login');
         })
     })
 
