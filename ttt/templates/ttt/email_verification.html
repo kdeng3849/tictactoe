@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html>
+<body>
+    Hi {{ user.username }},
+
+    <form action="http://{{ domain }}{% url 'verify' %}" method="POST">
+        <input type="hidden" name="email" value="{{ email }}">
+        <input type="hidden" name="key" value="{{ key }}">
+        <button type="submit">Verify email</button>
+    </form>
+
+    Please click on the link to confirm your registration,
+    {% autoescape off %}
+        http://{{ domain }}{% url 'verify' %}
+    {% endautoescape %}
+</body>
+</html>

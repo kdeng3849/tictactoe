@@ -5,15 +5,20 @@ import json, random
 from django.contrib import messages
 from django.contrib.auth import login, logout, authenticate
 from django.contrib.auth.models import User
+from django.contrib.sites.shortcuts import get_current_site #
 from django.core import serializers
+from django.core.mail import EmailMessage #
 from django.shortcuts import render, redirect
 from django.http import HttpResponse, JsonResponse
-from django.template import loader
+from django.template.loader import render_to_string #
+from django.utils.encoding import force_bytes, force_text
+from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode #
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_http_methods
 
 from .forms import AddUserForm, LoginForm
 from .models import Game
+from .tokens import account_activation_token
 
 # Create your views here.
 @csrf_exempt
@@ -161,11 +166,24 @@ def add_user(request):
                 return JsonResponse(context)
 
             # create user
-            user = User.objects.create_user(username=username, password=password, email=email, is_active=True)
+            user = User.objects.create_user(username=username, password=password, email=email, is_active=False)
             user.save()
             # messages.success(request, f'Account created for {username}. Please validate your email.')
 
-            # request.session['username'] = username
+            current_site = get_current_site(request)
+            mail_subject = 'Activate your ttt account.'
+            message = render_to_string('ttt/email_verification.html', {
+                'user': user,
+                'domain': current_site.domain,
+                'email': user.email,
+                'key': account_activation_token.make_token(user),
+            })
+            to_email = form.cleaned_data.get('email')
+            email = EmailMessage(
+                        mail_subject, message, to=[to_email]
+            )
+            email.send()
+            # return HttpResponse('Please confirm your email address to complete the registration')
             context = {
                 "status": "OK",
             }
@@ -176,6 +194,26 @@ def add_user(request):
     form = AddUserForm()
     # return render(request, 'ttt/index.html', { 'form': form })
     return JsonResponse({"status": "ERROR"})
+
+@csrf_exempt
+def verify(request):
+    # try:
+    #     uid = force_text(urlsafe_base64_decode(uidb64))
+    #     user = User.objects.get(pk=uid)
+    # except(TypeError, ValueError, OverflowError, User.DoesNotExist):
+    #     user = None
+    email = request.POST.get('email')
+    key = request.POST.get('key')
+
+    user = User.objects.get(email=email)
+    if user is not None and account_activation_token.check_token(user, key):
+        user.is_active = True
+        user.save()
+        # login(request, user)
+        # return redirect('home')
+        return HttpResponse('Thank you for your email confirmation. Now you can login your account.')
+
+    return HttpResponse('Activation link is invalid!')
 
 @csrf_exempt
 def login_user(request):
