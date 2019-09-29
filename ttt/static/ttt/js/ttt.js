@@ -118,10 +118,11 @@ $(function () {
         // only if there isn't a winner AND box is empty
         if(winner == ' ' && box.innerHTML == ' ') {
             box.innerHTML = 'X';
-            grid[id] = 'X'
+            // grid[id] = 'X'
 
             data = {
-                "grid": grid,
+                // "grid": grid,
+                "move": id // parse int?
             }
             fetch("/ttt/play", {
                 method: "POST",

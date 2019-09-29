@@ -54,7 +54,16 @@ def index(request):
 def play(request):
 
     data = json.loads(request.body.decode('utf-8'))
-    grid = data['grid']
+    # grid = data['grid']
+    move = int(data['move'])
+
+    if "grid" in request.session:
+        grid = request.session['grid']
+    else:
+        grid = [' ']*9
+        request.session['start_time'] = datetime.now().strftime("%m%d%y%H%M%S")
+    
+    grid[move] = 'X'
 
     def check_winner(grid):
         winner = ' '
@@ -131,16 +140,26 @@ def play(request):
     if winner == ' ':
         make_move(grid)
         winner = check_winner(grid)
+        request.session['grid'] = grid
 
     # if there is a winner, or no more empty spaces (tie)
     if winner != ' ' or ' ' not in grid:
-        start_time = datetime.now().strftime("%m%d%y%H%M%S")
+        # start_time = datetime.now().strftime("%m%d%y%H%M%S")
+        start_time = request.session['start_time']
+        print("start time", start_time, "now", datetime.now().strftime("%m%d%y%H%M%S"))
         grid_str = str(grid)
         # grid_str = json.dumps(grid)
         # print(grid)
         # print(grid_str)
         game = Game(id=start_time, user=request.user, grid=grid_str, winner=winner)
         game.save()
+
+        # start new game
+        try:
+            del request.session['start_time']
+            del request.session['grid']
+        except KeyError:
+            pass
 
     return JsonResponse({"grid": grid, "winner": winner})
 
@@ -184,11 +203,8 @@ def add_user(request):
             )
             email.send()
             # return HttpResponse('Please confirm your email address to complete the registration')
-            context = {
-                "status": "OK",
-            }
             # return render(request, 'ttt/index.html', context)
-            return JsonResponse(context)
+            return JsonResponse({"status": "OK"})
 
     # NEEDED?
     form = AddUserForm()
@@ -211,9 +227,9 @@ def verify(request):
         user.save()
         # login(request, user)
         # return redirect('home')
-        return HttpResponse('Thank you for your email confirmation. Now you can login your account.')
+        return JsonResponse({"status": "OK"})
 
-    return HttpResponse('Activation link is invalid!')
+    return JsonResponse({"status": "ERROR"})
 
 @csrf_exempt
 def login_user(request):

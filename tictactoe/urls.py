@@ -21,8 +21,6 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('ttt/', include('ttt.urls')),
     path('adduser', ttt_views.add_user, name='adduser'),
-    # path(r'^verify/(?P<uidb64>[0-9A-Za-z_\-]+)/(?P<token>[0-9A-Za-z]{1,13}-[0-9A-Za-z]{1,20})/$',
-    #     ttt_views.verify, name='activate'),
     path('verify', ttt_views.verify, name='verify'),
     path('login', ttt_views.login_user, name='login'),
     path('logout', ttt_views.logout_user, name='logout'),
