@@ -191,18 +191,17 @@ def add_user(request):
 
             current_site = get_current_site(request)
             mail_subject = 'Activate your ttt account.'
-            key = account_activation_token.make_token(user)
+            # key = account_activation_token.make_token(user)
             message = render_to_string('ttt/email_verification.html', {
                 'user': user,
                 'domain': current_site.domain,
                 'email': user.email,
-                'key': key,
+                'key': 'abracadabra',
             })
             to_email = form.cleaned_data.get('email')
             email = EmailMessage(
-                        mail_subject, message, to=[to_email]
+                mail_subject, message, to=[to_email]
             )
-            print("adduser", to_email, key) #
             email.send()
             # return HttpResponse('Please confirm your email address to complete the registration')
             # return render(request, 'ttt/index.html', context)
@@ -220,8 +219,13 @@ def verify(request):
     #     user = User.objects.get(pk=uid)
     # except(TypeError, ValueError, OverflowError, User.DoesNotExist):
     #     user = None
-    email = request.POST.get('email')
-    key = request.POST.get('key')
+
+    data = json.loads(request.body.decode('utf-8'))
+    email = data['email']
+    key = data['key']
+
+    # email = request.POST.get('email')
+    # key = request.POST.get('key')
     print("verify", email, key)
 
     try:
@@ -229,7 +233,8 @@ def verify(request):
     except User.DoesNotExist:
         user = None
     
-    if user is not None and account_activation_token.check_token(user, key):
+    # if user is not None and account_activation_token.check_token(user, key):
+    if user is not None and key == 'abracadabra':
         user.is_active = True
         user.save()
         # login(request, user)
