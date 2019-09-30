@@ -66,7 +66,7 @@ def play(request):
     else:
         grid = [' ']*9
         request.session['start_time'] = datetime.now().strftime("%m%d%y%H%M%S")
-        new_game = Game(start_time=request.session['start_time'], user=request.user)
+        new_game = Game(id=request.session['start_time'], user=request.user)
         new_game.save()
         print(request.session['start_time']) #
     
@@ -165,7 +165,7 @@ def play(request):
         # print(grid)
         # print(grid_str)
         # game = Game(id=start_time, user=request.user, grid=grid_str, winner=winner)
-        game = Game.objects.get(start_time)
+        game = Game.objects.get(id=start_time)
         game.grid = grid_str
         game.winner = winner
         game.save()
@@ -329,7 +329,8 @@ def get_game(request):
         }
 
         data = json.loads(request.body.decode('utf-8'))
-        query = list(Game.objects.filter(user=request.user, id=data['id']).values('grid', 'winner'))
+        # query = list(Game.objects.filter(user=request.user, id=data['id']).values('grid', 'winner'))
+        query = Game.objects.get(id=data['id'])
         
         print(data)
         print(list(Game.objects.filter(user=request.user).values('id', 'grid', 'winner')))
@@ -339,9 +340,10 @@ def get_game(request):
         if not query:
             return JsonResponse({"status": "ERROR"})
 
-        game = query[0]
-        response['grid'] = game['grid']
-        response['winner'] = game['winner']
+        # game = query[0]
+        response['grid'] = query.grid.replace('[', '').replace(']', '').replace("'", '').split(', ')
+        # response['grid'] = json.loads(query.grid)
+        response['winner'] = query.winner
 
         return JsonResponse(response)
 

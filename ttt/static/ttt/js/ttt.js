@@ -10,10 +10,10 @@ $(function () {
 
     $('#test').click(() => {
         data = {
-            
+            "id": "093019215306"
         }
         
-        fetch("/getscore", {
+        fetch("/getgame", {
             method: "POST",
             mode: "cors",
             cache: "no-cache",
@@ -23,7 +23,7 @@ $(function () {
             },
             redirect: "follow",
             referrer: "no-referrer",
-            // body: JSON.stringify(data)
+            body: JSON.stringify(data)
         })
         .then(response => {
             return response.json();
