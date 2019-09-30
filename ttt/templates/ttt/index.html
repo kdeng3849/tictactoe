@@ -22,7 +22,9 @@
             <div class="alert alert-{{ message.tags  }}">{{ message }}</div>
         {% endfor %}
     {% endif %} -->
-   
+    <div>
+        <button id="test">POST</button>
+    </div>
     <div id="playPage" class="page">
         <div>Hello {{ request.session.username }}, {% now "jS F Y H:i" %}</div>
     

@@ -321,7 +321,7 @@ def get_game(request):
         }
 
         data = json.loads(request.body.decode('utf-8'))
-        query = list(Game.objects.filter(user=request.user, id=data).values('grid', 'winner'))
+        query = list(Game.objects.filter(user=request.user, id=data['id']).values('grid', 'winner'))
 
         # if query returned no results (empty)
         if not query:

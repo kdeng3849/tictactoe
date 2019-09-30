@@ -8,6 +8,31 @@ $(function () {
         $('#' + page + "Page").show()
     }
 
+    $('#test').click(() => {
+        data = {
+            
+        }
+        
+        fetch("/getscore", {
+            method: "POST",
+            mode: "cors",
+            cache: "no-cache",
+            credentials: "same-origin",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            redirect: "follow",
+            referrer: "no-referrer",
+            // body: JSON.stringify(data)
+        })
+        .then(response => {
+            return response.json();
+        })
+        .then(response => {
+            console.log(response);
+        })
+    })
+
     $('#signupButton').click(() => {
         showPage('signup');
     })
