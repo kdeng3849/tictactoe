@@ -319,15 +319,17 @@ def get_game(request):
             'grid': '',
             'winner': '',
         }
-            data = json.loads(request.body.decode('utf-8'))
-            query = list(Game.objects.filter(user=request.user, id=data).values('grid', 'winner'))
 
-            if len(game) is 0:
-                return JsonResponse({"status": "ERROR"})
+        data = json.loads(request.body.decode('utf-8'))
+        query = list(Game.objects.filter(user=request.user, id=data).values('grid', 'winner'))
 
-            game = query[0]
-            response['grid'] = game['grid']
-            response['winner'] = game['winner']
+        # if query returned no results (empty)
+        if not query:
+            return JsonResponse({"status": "ERROR"})
+
+        game = query[0]
+        response['grid'] = game['grid']
+        response['winner'] = game['winner']
 
         return JsonResponse(response)
 
