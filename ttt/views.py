@@ -191,16 +191,18 @@ def add_user(request):
 
             current_site = get_current_site(request)
             mail_subject = 'Activate your ttt account.'
+            key = account_activation_token.make_token(user)
             message = render_to_string('ttt/email_verification.html', {
                 'user': user,
                 'domain': current_site.domain,
                 'email': user.email,
-                'key': account_activation_token.make_token(user),
+                'key': key,
             })
             to_email = form.cleaned_data.get('email')
             email = EmailMessage(
                         mail_subject, message, to=[to_email]
             )
+            print("adduser", to_email, key) #
             email.send()
             # return HttpResponse('Please confirm your email address to complete the registration')
             # return render(request, 'ttt/index.html', context)
@@ -220,8 +222,13 @@ def verify(request):
     #     user = None
     email = request.POST.get('email')
     key = request.POST.get('key')
+    print("verify", email, key)
 
-    user = User.objects.get(email=email)
+    try:
+        user = User.objects.get(email=email)
+    except User.DoesNotExist:
+        user = None
+    
     if user is not None and account_activation_token.check_token(user, key):
         user.is_active = True
         user.save()
