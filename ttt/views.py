@@ -66,8 +66,11 @@ def play(request):
     else:
         grid = [' ']*9
         request.session['start_time'] = datetime.now().strftime("%m%d%y%H%M%S")
+        new_game = Game(start_time=request.session['start_time'], user=request.user)
+        new_game.save()
+        print(request.session['start_time']) #
     
-    if move != None:
+    if move is not None:
         move = int(move)
         grid[move] = 'X'
     else:
@@ -151,6 +154,7 @@ def play(request):
         winner = check_winner(grid)
         request.session['grid'] = grid
 
+    print(grid) #
     # if there is a winner, or no more empty spaces (tie)
     if winner != ' ' or ' ' not in grid:
         # start_time = datetime.now().strftime("%m%d%y%H%M%S")
@@ -160,8 +164,12 @@ def play(request):
         # grid_str = json.dumps(grid)
         # print(grid)
         # print(grid_str)
-        game = Game(id=start_time, user=request.user, grid=grid_str, winner=winner)
+        # game = Game(id=start_time, user=request.user, grid=grid_str, winner=winner)
+        game = Game.objects.get(start_time)
+        game.grid = grid_str
+        game.winner = winner
         game.save()
+        print(winner) #
 
         # start new game
         try:
@@ -322,6 +330,10 @@ def get_game(request):
 
         data = json.loads(request.body.decode('utf-8'))
         query = list(Game.objects.filter(user=request.user, id=data['id']).values('grid', 'winner'))
+        
+        print(data)
+        print(list(Game.objects.filter(user=request.user).values('id', 'grid', 'winner')))
+        print(query)
 
         # if query returned no results (empty)
         if not query:
