@@ -53,6 +53,10 @@ def index(request):
 @csrf_exempt
 def play(request):
 
+    # check if logged in
+    if not request.user.is_authenticated:
+        return JsonResponse({"status": "ERROR"})
+
     data = json.loads(request.body.decode('utf-8'))
     move = data['move']
     # grid = data['grid']
@@ -151,7 +155,7 @@ def play(request):
     if winner != ' ' or ' ' not in grid:
         # start_time = datetime.now().strftime("%m%d%y%H%M%S")
         start_time = request.session['start_time']
-        print("start time", start_time, "now", datetime.now().strftime("%m%d%y%H%M%S"))
+        # print("start time", start_time, "now", datetime.now().strftime("%m%d%y%H%M%S"))
         grid_str = str(grid)
         # grid_str = json.dumps(grid)
         # print(grid)
@@ -166,7 +170,7 @@ def play(request):
         except KeyError:
             pass
 
-    return JsonResponse({"grid": grid, "winner": winner})
+    return JsonResponse({"status": "OK", "grid": grid, "winner": winner})
 
 @csrf_exempt
 def add_user(request):
@@ -309,38 +313,47 @@ def list_games(request):
 @csrf_exempt
 @require_http_methods(["POST"])
 def get_game(request):
-    response = {
-        'status': 'OK',
-        'grid': '',
-        'winner': '',
-    }
-    data = json.loads(request.body.decode('utf-8'))
-    query = list(Game.objects.filter(user=request.user, id=data).values('grid', 'winner'))
+    if request.user.is_authenticated:
+        response = {
+            'status': 'OK',
+            'grid': '',
+            'winner': '',
+        }
+            data = json.loads(request.body.decode('utf-8'))
+            query = list(Game.objects.filter(user=request.user, id=data).values('grid', 'winner'))
 
-    game = query[0]
-    response['grid'] = game['grid']
-    response['winner'] = game['winner']
+            if len(game) is 0:
+                return JsonResponse({"status": "ERROR"})
 
-    return JsonResponse(response)
+            game = query[0]
+            response['grid'] = game['grid']
+            response['winner'] = game['winner']
+
+        return JsonResponse(response)
+
+    return JsonResponse({"status": "ERROR"})
 
 @csrf_exempt
 @require_http_methods(["POST"])
 def get_score(request):
-    response = {
-        'status': 'OK',
-        'human': 0,
-        'wopr': 0,
-        'tie': 0
-    }
+    if request.user.is_authenticated:
+        response = {
+            'status': 'OK',
+            'human': 0,
+            'wopr': 0,
+            'tie': 0
+        }
 
-    query = list(Game.objects.filter(user=request.user).values('winner'))
+        query = list(Game.objects.filter(user=request.user).values('winner'))
 
-    for game in query:
-        if game['winner'] == 'X':
-            response['human'] += 1
-        elif game['winner'] == 'O':
-            response['wopr'] += 1
-        else:
-            response['tie'] += 1
+        for game in query:
+            if game['winner'] == 'X':
+                response['human'] += 1
+            elif game['winner'] == 'O':
+                response['wopr'] += 1
+            else:
+                response['tie'] += 1
 
-    return JsonResponse(response)
+        return JsonResponse(response)
+
+    return JsonResponse({"status": "ERROR"})
