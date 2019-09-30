@@ -63,7 +63,7 @@ def play(request):
         grid = [' ']*9
         request.session['start_time'] = datetime.now().strftime("%m%d%y%H%M%S")
     
-    if move:
+    if move != None:
         move = int(move)
         grid[move] = 'X'
     else:
