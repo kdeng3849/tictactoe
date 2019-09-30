@@ -54,8 +54,8 @@ def index(request):
 def play(request):
 
     data = json.loads(request.body.decode('utf-8'))
+    move = data['move']
     # grid = data['grid']
-    move = int(data['move'])
 
     if "grid" in request.session:
         grid = request.session['grid']
@@ -63,7 +63,12 @@ def play(request):
         grid = [' ']*9
         request.session['start_time'] = datetime.now().strftime("%m%d%y%H%M%S")
     
-    grid[move] = 'X'
+    if move:
+        move = int(move)
+        grid[move] = 'X'
+    else:
+        return JsonResponse({"grid": grid})
+
 
     def check_winner(grid):
         winner = ' '
