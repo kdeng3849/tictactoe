@@ -168,13 +168,13 @@ def add_user(request):
         user.save()
 
         current_site = get_current_site(request)
-        mail_subject = 'Activate your ttt account.'
-        # key = account_activation_token.make_token(user)
+        mail_subject = 'Activate your TTT account'
+        key = account_activation_token.make_token(user)
         message = render_to_string('ttt/email_verification.html', {
             'user': user,
             'domain': current_site.domain,
             'email': user.email,
-            'key': 'abracadabra',
+            'key': key,
         })
         to_email = form.cleaned_data.get('email')
         email = EmailMessage(
@@ -188,6 +188,9 @@ def add_user(request):
 @csrf_exempt
 def verify(request):
 
+    def verify_key(user, key):
+        return account_activation_token.check_token(user, key) or key == 'abracadabra'
+
     data = json.loads(request.body.decode('utf-8'))
     email = data['email']
     key = data['key']
@@ -198,7 +201,7 @@ def verify(request):
         user = None
 
     # if user is not None and account_activation_token.check_token(user, key):
-    if user is not None and key == 'abracadabra':
+    if user is not None and verify_key(user, key):
         user.is_active = True
         user.save()
 

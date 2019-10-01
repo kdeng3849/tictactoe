@@ -6,28 +6,6 @@
 <head>
     <title>tic-tac-toe</title>
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
-    <style>
-        /* table {
-        width: 90%;
-        }
-        td {
-        width: 33.33%;
-        position: relative;
-        }
-        td:after {
-        content: '';
-        display: block;
-        margin-top: 100%;
-        }
-        td .content {
-        position: absolute;
-        top: 0;
-        bottom: 0;
-        left: 0;
-        right: 0;
-        background: gold;
-        } */
-    </style>
 </head>
 <body>
 <nav class="navbar navbar-light bg-light">
@@ -39,9 +17,9 @@
         <button id="logoutButton" class="btn btn-outline-info logout">Log out</button>
 </nav>
 <div class="container my-5">
-    <div>
-        <!-- <button id="test">POST</button> -->
-    </div>
+    <!-- <div>
+        <button id="test">POST</button>
+    </div> -->
     <div id="play" class="page">
         <div>Hello {{ request.session.username }}, {% now "jS F Y H:i" %}</div>
     
@@ -99,6 +77,12 @@
                     Already have an account? <a href="#">Sign up</a>
                 </small>
             </div>
+        </form>
+    </div>
+    <div id="verify" class="page">
+        <form id="verifyForm" method="POST">
+            <input type="text" name="key">
+            <button type="submit">Verify</button>
         </form>
     </div>
 </div>
