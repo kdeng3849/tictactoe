@@ -1,17 +1,14 @@
-from datetime import date, datetime
+from datetime import datetime
 import json
 import random
 
-from django.contrib import messages
 from django.contrib.auth import login, logout, authenticate
 from django.contrib.auth.models import User
 from django.contrib.sites.shortcuts import get_current_site
-from django.core import serializers
 from django.core.mail import EmailMessage
-from django.shortcuts import render, redirect
-from django.http import HttpResponse, JsonResponse
+from django.http import JsonResponse
+from django.shortcuts import render
 from django.template.loader import render_to_string
-from django.utils.encoding import force_bytes, force_text
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_http_methods
 
@@ -222,9 +219,11 @@ def login_user(request):
         user = authenticate(username=username, password=password)
 
         if user is not None:
+            response = JsonResponse({"status": "OK"})
             login(request, user)
             request.session['username'] = username
-            return JsonResponse({"status": "OK"})
+            response.set_cookie('username', username)
+            return response
 
     return JsonResponse({"status": "ERROR"})
 
@@ -233,7 +232,10 @@ def login_user(request):
 def logout_user(request):
 
     logout(request)
-    return JsonResponse({"status": "OK"})
+    response = JsonResponse({'status': 'OK'})
+    response.delete_cookie('username')
+
+    return response
 
 @csrf_exempt
 def list_games(request):

@@ -6,21 +6,43 @@
 <head>
     <title>tic-tac-toe</title>
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+    <style>
+        /* table {
+        width: 90%;
+        }
+        td {
+        width: 33.33%;
+        position: relative;
+        }
+        td:after {
+        content: '';
+        display: block;
+        margin-top: 100%;
+        }
+        td .content {
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        background: gold;
+        } */
+    </style>
 </head>
 <body>
 <nav class="navbar navbar-light bg-light">
     <a class="navbar-brand">tic-tac-toe</a>
     <div>
-        <button id="signupButton" class="btn btn-outline-info">Sign up</button>
-        <button id="loginButton" class="btn btn-outline-info">Log in</button>
+        <button id="signupButton" class="btn btn-outline-info signup">Sign up</button>
+        <button id="loginButton" class="btn btn-outline-info login">Log in</button>
 
-        <button id="logoutButton" class="btn btn-outline-info">Log out</button>
+        <button id="logoutButton" class="btn btn-outline-info logout">Log out</button>
 </nav>
 <div class="container my-5">
     <div>
-        <button id="test">POST</button>
+        <!-- <button id="test">POST</button> -->
     </div>
-    <div id="playPage" class="page">
+    <div id="play" class="page">
         <div>Hello {{ request.session.username }}, {% now "jS F Y H:i" %}</div>
     
         <form action='/ttt/' method='POST'>{% csrf_token %}
@@ -46,9 +68,10 @@
         </form>
         <div id="winner">
         </div>
+        <button class="btn btn-info reset">Play again</button>
     </div>
 
-    <div id="signupPage" class="page">
+    <div id="signup" class="page">
         <form id="signupForm" method="POST">
             <fieldset class="form-group col-4">
                 {{ addUserForm | crispy  }}
@@ -63,13 +86,13 @@
             </div>
         </form>
     </div>
-    <div id="loginPage" class="page">
+    <div id="login" class="page">
         <form id="loginForm" method="POST">
             <fieldset class="form-group col-4">
                 {{ loginForm | crispy  }}
             </fieldset>
             <div class="form-group">
-                <button class="btn btn-outline-info">Sign in</button>
+                <button class="btn btn-outline-info">Log in</button>
             </div>
             <div class="border-top pt-3">
                 <small class="text-muted">

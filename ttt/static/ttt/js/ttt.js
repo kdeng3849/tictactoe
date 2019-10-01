@@ -5,11 +5,11 @@ $(function () {
 
     function showPage(page) {
         $('.page').hide()
-        $('#' + page + "Page").show()
+        $('#' + page).show()
     }
 
     $('#test').click(() => {
-        data = {
+        var data = {
             "id": "093019215306"
         }
         
@@ -33,12 +33,16 @@ $(function () {
         })
     })
 
-    $('#signupButton').click(() => {
+    $('button.signup').click(() => {
         showPage('signup');
     })
 
-    $('#loginButton').click(() => {
+    $('button.login').click(() => {
         showPage('login');
+    })
+
+    $('button.reset').click(() => {
+        resetGame();
     })
 
     $('.box').click(function () {
@@ -48,7 +52,7 @@ $(function () {
     $('#signupForm').submit(function(event) {
         event.preventDefault();
 
-        data = $(this).serializeArray().reduce((dict, field) => {
+        var data = $(this).serializeArray().reduce((dict, field) => {
             dict[field.name] = field.value;
             return dict;
         }, {});
@@ -72,14 +76,14 @@ $(function () {
             console.log(response);
             
             if(response.status == "OK")
-                showPage('play');
+                renderView();
         })
     })
 
     $('#loginForm').submit(function(event) {
         event.preventDefault();
 
-        data = $(this).serializeArray().reduce((dict, field) => {
+        var data = $(this).serializeArray().reduce((dict, field) => {
             dict[field.name] = field.value;
             return dict;
         }, {});
@@ -103,11 +107,12 @@ $(function () {
             console.log(response);
 
             if(response.status == "OK")
-                showPage('play');
+                renderView();
+                resetGame();
         })
     })
 
-    $('#logoutButton').click(function(event) {
+    $('button.logout').click(function(event) {
         fetch("/logout", {
             method: "GET",
             mode: "cors",
@@ -126,7 +131,7 @@ $(function () {
             console.log(response);
 
             if(response.status == "OK")
-                showPage('login');
+                renderView();
         })
     })
 
@@ -143,11 +148,9 @@ $(function () {
         // only if there isn't a winner AND box is empty
         if(winner == ' ' && box.innerHTML == ' ') {
             box.innerHTML = 'X';
-            // grid[id] = 'X'
 
-            data = {
-                // "grid": grid,
-                "move": id // parse int?
+            var data = {
+                "move": id
             }
             fetch("/ttt/play", {
                 method: "POST",
@@ -169,12 +172,58 @@ $(function () {
                 grid = response.grid;
                 winner = response.winner;
                 fillGrid(grid);
-                if(winner != ' ' || !grid.includes(' '))
-                    document.getElementById("winner").innerHTML = "The winner is " + (winner != ' ' ? winner : "no one") + "."
+                if(winner != ' ' || !grid.includes(' ')) {
+                    document.getElementById("winner").innerHTML = (winner != ' ' ? winner : "No one") + " won.";
+                    $("button.reset").show()
+                }
             })
         }
-
     }
-    if(document.getElementById("grid"))
+
+    function getCookie(cname) {
+        var name = cname + "=";
+        var ca = document.cookie.split(';');
+        for(var i = 0; i < ca.length; i++) {
+            var c = ca[i];
+            while (c.charAt(0) == ' ') {
+                c = c.substring(1);
+            }
+            if (c.indexOf(name) == 0) {
+                return c.substring(name.length, c.length);
+            }
+        }
+        return "";
+    }
+
+    function resetGame() {
+        winner = ' ';
+        grid = [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '];
         fillGrid(grid);
+        document.getElementById("winner").innerHTML = "";
+        $("button.reset").hide();
+    }
+
+    function renderView() {
+        if(getCookie("username")) {
+            showPage("play")
+            $("button.signup").hide()
+            $("button.login").hide()
+            $("button.logout").show() 
+        }
+        else {
+            showPage("login")
+            $("button.signup").show()
+            $("button.login").show()
+            $("button.logout").hide()
+        }
+    }
+
+    function initializeView() {
+        fillGrid(grid);
+        renderView();
+        $("button.reset").hide();
+    }
+
+    initializeView();
+
   });
