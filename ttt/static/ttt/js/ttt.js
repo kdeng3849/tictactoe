@@ -77,6 +77,7 @@ $(function () {
             
             if(response.status == "OK")
                 // renderView();
+                $("input.verify-email").val(data["email"])
                 showPage("verify");
         })
     })

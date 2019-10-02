@@ -7,14 +7,14 @@
     Hi {{ user.username }},
 
     Please click on the link to confirm your registration.
-    <form action="http://{{ domain }}{% url 'verify' %}" method="POST">
+    <!-- <form action="http://{{ domain }}{% url 'verify' %}" method="POST">
         <input type="hidden" name="email" value="{{ email }}">
         <input type="hidden" name="key" value="{{ key }}">
-        <button type="submit" class="btn btn-link">validation key: &#60;{{ key }}&#62;</button>
-    </form>
+        <button type="submit" class="btn btn-link">Validation key: &#60;{{ key }}&#62;</button>
+    </form> -->
 
-    <!-- {% autoescape off %}
-        http://{{ domain }}{% url 'verify' %}
-    {% endautoescape %} -->
+    {% autoescape off %}
+        <a href="http://{{ domain }}{% url 'verify' %}?email={{ email }}&key={{ key }}">Validation key: &#60;{{ key }}&#62;</a>
+    {% endautoescape %}
 </body>
 </html>

@@ -170,6 +170,7 @@ def add_user(request):
         current_site = get_current_site(request)
         mail_subject = 'Activate your TTT account'
         key = account_activation_token.make_token(user)
+        print(key) ###
         message = render_to_string('ttt/email_verification.html', {
             'user': user,
             'domain': current_site.domain,
@@ -191,9 +192,13 @@ def verify(request):
     def verify_key(user, key):
         return account_activation_token.check_token(user, key) or key == 'abracadabra'
 
-    data = json.loads(request.body.decode('utf-8'))
-    email = data['email']
-    key = data['key']
+    if request.method == 'GET':
+        email = request.GET.get('email')
+        key = request.GET.get('key') # check if key is not None?
+    else:
+        data = json.loads(request.body.decode('utf-8'))
+        email = data['email']
+        key = data['key']
 
     try:
         user = User.objects.get(email=email)
